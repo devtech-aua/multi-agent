@@ -341,7 +341,7 @@
             const messageInput = document.getElementById('messageInput');
             const sendButton = document.getElementById('sendButton');
 
-            socket = new WebSocket(`ws://${window.location.host}/ws`);
+            socket = new WebSocket(`${window.location.protocol === 'https:' ? 'wss' : 'ws'}://${window.location.host}/ws`);
 
             socket.onopen = function(e) {
                 console.log('[WebSocket] Connection established');

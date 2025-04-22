@@ -193,6 +193,6 @@ os.makedirs("static", exist_ok=True)
 
 if __name__ == "__main__":
     try:
-        uvicorn.run(app, host="0.0.0.0", port=8080)
+        uvicorn.run(app, host="0.0.0.0", port=8089)
     except KeyboardInterrupt:
         stop_agents()
