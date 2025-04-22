@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A2A Multi-Agent Demo</title>
+    <style>
+        :root {
+            --primary-color: #4a6ff3;
+            --secondary-color: #f3f4f6;
+            --accent-color: #2e42a0;
+            --text-color: #333;
+            --light-text: #666;
+            --border-color: #ddd;
+            --agent-msg-bg: var(--secondary-color);
+            --user-msg-bg: #e7f0ff;
+            --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f9fafb;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            grid-gap: 20px;
+            height: 100vh;
+        }
+
+        header {
+            grid-column: span 2;
+            display: flex;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+            color: var(--primary-color);
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            margin-right: 10px;
+            background-color: var(--primary-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .sidebar {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+        }
+
+        .sidebar h2 {
+            margin-top: 0;
+            font-size: 18px;
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .agent-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .agent-list li {
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            background-color: var(--secondary-color);
+            font-weight: 500;
+        }
+
+        .agent-list .agent-name {
+            font-weight: bold;
+        }
+
+        .agent-list .agent-port {
+            font-size: 12px;
+            color: var(--light-text);
+        }
+
+        .help-section {
+            margin-top: 20px;
+        }
+
+        .help-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--primary-color);
+        }
+
+        .command-examples {
+            background-color: var(--secondary-color);
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .command-examples strong {
+            color: var(--accent-color);
+        }
+
+        .main {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 120px);
+        }
+
+        .chat-container {
+            flex-grow: 1;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            padding: 15px;
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: bold;
+        }
+
+        .messages {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message {
+            padding: 10px 15px;
+            border-radius: 8px;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        .message.user {
+            align-self: flex-end;
+            background-color: var(--user-msg-bg);
+        }
+
+        .message.agent {
+            align-self: flex-start;
+            background-color: var(--agent-msg-bg);
+        }
+
+        .message-sender {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .message-content {
+            white-space: pre-wrap;
+        }
+
+        .message-content pre {
+            background-color: rgba(0, 0, 0, 0.05);
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+
+        .input-container {
+            padding: 15px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+        }
+
+        #messageInput {
+            flex-grow: 1;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 15px;
+        }
+
+        #sendButton {
+            margin-left: 10px;
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #sendButton:hover {
+            background-color: var(--accent-color);
+        }
+
+        /* Markdown-like styling for agent responses */
+        .message-content h1, .message-content h2, .message-content h3 {
+            margin-top: 1em;
+            margin-bottom: 0.5em;
+            color: var(--accent-color);
+        }
+
+        .message-content h1 {
+            font-size: 1.5em;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.3em;
+        }
+
+        .message-content h2 {
+            font-size: 1.3em;
+        }
+
+        .message-content h3 {
+            font-size: 1.2em;
+        }
+
+        .message-content ul, .message-content ol {
+            padding-left: 2em;
+        }
+
+        .message-content code {
+            background-color: rgba(0, 0, 0, 0.05);
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-active {
+            background-color: #22c55e;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">A2A</div>
+            <h1>Agent-to-Agent Multi-Agent Demo</h1>
+        </header>
+
+        <aside class="sidebar">
+            <h2>Available Agents</h2>
+            <ul class="agent-list">
+                <li>
+                    <span class="status-indicator status-active"></span>
+                    <span class="agent-name">Coordinator Agent</span>
+                    <div class="agent-port">Port: 8000</div>
+                </li>
+                <li>
+                    <span class="status-indicator status-active"></span>
+                    <span class="agent-name">Calculator Agent</span>
+                    <div class="agent-port">Port: 8001</div>
+                </li>
+                <li>
+                    <span class="status-indicator status-active"></span>
+                    <span class="agent-name">Translator Agent</span>
+                    <div class="agent-port">Port: 8002</div>
+                </li>
+                <li>
+                    <span class="status-indicator status-active"></span>
+                    <span class="agent-name">Weather Agent</span>
+                    <div class="agent-port">Port: 8003</div>
+                </li>
+                <li>
+                    <span class="status-indicator status-active"></span>
+                    <span class="agent-name">Timer Agent</span>
+                    <div class="agent-port">Port: 8004</div>
+                </li>
+            </ul>
+
+            <div class="help-section">
+                <div class="help-title">Example Commands</div>
+                <div class="command-examples">
+                    <p><strong>Help:</strong> help</p>
+                    <p><strong>Calculator:</strong> calculate: 2 + 2 * 3</p>
+                    <p><strong>Translator:</strong> translate en-es: hello</p>
+                    <p><strong>Weather:</strong> weather london</p>
+                    <p><strong>Timer:</strong> time</p>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main">
+            <div class="chat-container">
+                <div class="chat-header">
+                    Chat with Multi-Agent System
+                </div>
+                <div class="messages" id="messages">
+                    <div class="message agent">
+                        <div class="message-sender">Coordinator Agent</div>
+                        <div class="message-content">
+                            Welcome to the A2A Multi-Agent Demo! Type <strong>help</strong> to see available commands and agents.
+                        </div>
+                    </div>
+                </div>
+                <div class="input-container">
+                    <input type="text" id="messageInput" placeholder="Type your message..." />
+                    <button id="sendButton">Send</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let socket;
+
+        function connectWebSocket() {
+            const messagesContainer = document.getElementById('messages');
+            const messageInput = document.getElementById('messageInput');
+            const sendButton = document.getElementById('sendButton');
+
+            socket = new WebSocket(`ws://${window.location.host}/ws`);
+
+            socket.onopen = function(e) {
+                console.log('[WebSocket] Connection established');
+            };
+
+            socket.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                
+                // Create message element
+                const messageElement = document.createElement('div');
+                messageElement.className = `message ${data.sender}`;
+                
+                // Create sender element
+                const senderElement = document.createElement('div');
+                senderElement.className = 'message-sender';
+                senderElement.textContent = data.sender === 'agent' ? 'Agent' : 'You';
+                
+                // Create content element
+                const contentElement = document.createElement('div');
+                contentElement.className = 'message-content';
+                
+                // Process markdown in agent responses
+                if (data.sender === 'agent') {
+                    // Simple markdown processing
+                    let content = data.message
+                        // Code blocks
+                        .replace(/```([^`]+)```/g, '<pre>$1</pre>')
+                        // Bold
+                        .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                        // Italic
+                        .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+                        // Headers
+                        .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+                        .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+                        .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+                        // Lists
+                        .replace(/^- (.+)$/gm, '<li>$1</li>')
+                        // Inline code
+                        .replace(/`([^`]+)`/g, '<code>$1</code>')
+                        // Line breaks
+                        .replace(/\n/g, '<br>');
+                    
+                    contentElement.innerHTML = content;
+                } else {
+                    contentElement.textContent = data.message;
+                }
+                
+                // Append elements
+                messageElement.appendChild(senderElement);
+                messageElement.appendChild(contentElement);
+                messagesContainer.appendChild(messageElement);
+                
+                // Scroll to bottom
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            };
+
+            socket.onclose = function(event) {
+                if (event.wasClean) {
+                    console.log(`[WebSocket] Connection closed cleanly, code=${event.code} reason=${event.reason}`);
+                } else {
+                    console.log('[WebSocket] Connection died');
+                    // Try to reconnect after a delay
+                    setTimeout(connectWebSocket, 3000);
+                }
+            };
+
+            socket.onerror = function(error) {
+                console.log(`[WebSocket] Error: ${error.message}`);
+            };
+
+            // Event handlers
+            sendButton.addEventListener('click', sendMessage);
+            messageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+
+            function sendMessage() {
+                const message = messageInput.value.trim();
+                if (message && socket.readyState === WebSocket.OPEN) {
+                    // Send to server
+                    socket.send(JSON.stringify({
+                        message: message
+                    }));
+                    
+                    // Add to UI
+                    const messageElement = document.createElement('div');
+                    messageElement.className = 'message user';
+                    
+                    const senderElement = document.createElement('div');
+                    senderElement.className = 'message-sender';
+                    senderElement.textContent = 'You';
+                    
+                    const contentElement = document.createElement('div');
+                    contentElement.className = 'message-content';
+                    contentElement.textContent = message;
+                    
+                    messageElement.appendChild(senderElement);
+                    messageElement.appendChild(contentElement);
+                    messagesContainer.appendChild(messageElement);
+                    
+                    // Clear input and focus
+                    messageInput.value = '';
+                    messageInput.focus();
+                    
+                    // Scroll to bottom
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }
+            }
+        }
+
+        // Connect when page loads
+        window.addEventListener('load', connectWebSocket);
+    </script>
+</body>
+</html>
